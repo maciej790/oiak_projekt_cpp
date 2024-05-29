@@ -1,7 +1,7 @@
 #include <iostream>
 #include <bitset>
 #include <cstring>
-
+#include <cmath>
 
 class Posit {
 private:
@@ -37,7 +37,7 @@ public:
             int bias = (1 << (8 - 1)) - 1;
 
             // Step 15: Calculate biased exponent
-            int biased_exp = (regime << es) + exp + bias;
+            int biased_exp = (regime * (1 << es)) + exp + bias;
 
             // Debug output
             std::cout << "Biased Exp: " << biased_exp << std::endl;
@@ -53,17 +53,21 @@ public:
 private:
     void extract_fields(uint16_t val, int &regime, int &exp, int &frac) {
         int k = 0;
-        while (val & (1 << (n - 2 - k))) {
+        while (k < (n - 1) && ((val >> (n - 2 - k)) & 1)) {
             k++;
         }
 
-        regime = k - 1;
-        exp = (val >> (n - 2 - k - es)) & ((1 << es) - 1);
-        frac = (val & ((1 << (n - 2 - k - es)) - 1)) << (23 - (n - 2 - k - es)); // Assuming IEEE 754 single precision float
+        regime = (k > 0 ? k - 1 : -k);
+        int regime_length = k + 1;
+        int exp_length = es;
+        int frac_length = n - 1 - regime_length - exp_length;
+
+        exp = (val >> frac_length) & ((1 << exp_length) - 1);
+        frac = (val & ((1 << frac_length) - 1)) << (23 - frac_length); // Assuming IEEE 754 single precision float
     }
 
     float construct_ieee_float(bool sign, int biased_exp, int frac) {
-        uint32_t ieee_int = (sign << 31) | (biased_exp << 23) | (frac & ((1 << 23) - 1));
+        uint32_t ieee_int = (sign << 31) | ((biased_exp & 0xFF) << 23) | (frac & ((1 << 23) - 1));
         float ieee_float;
         std::memcpy(&ieee_float, &ieee_int, sizeof(ieee_float));
         return ieee_float;
@@ -71,13 +75,10 @@ private:
 };
 
 int main() {
-    // Example usage
-    Posit posit_system(16, 2);
-    uint16_t posit_value = 0b1011111001000111; // Example Posit value
-
+    uint16_t posit_value = 0b1011111001000111;
+    Posit posit_system(16, 3);
     float ieee_float = posit_system.posit_to_float(posit_value);
-
-    std::cout << "Posit: " << std::bitset<16>(posit_value) << ", IEEE 754 Float: " << ieee_float << std::endl;
+    std::cout << "Posit (es=3): " << std::bitset<16>(posit_value) << ", IEEE 754 Float: " << ieee_float << std::endl;
 
     return 0;
 }
