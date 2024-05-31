@@ -4,8 +4,8 @@
 #include <string.h>
 #include <math.h>
 
-#define N 16
-#define ES 2
+#int N = 16;
+#int ES = 2;
 #define BIAS ((1 << (8 - 1)) - 1)
 
 void extract_fields(uint16_t val, int *regime, int *exp, int *frac);
