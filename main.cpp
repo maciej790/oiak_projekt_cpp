@@ -1,7 +1,6 @@
-#include <iostream>
+ #include <iostream>
 #include <bitset>
 #include <cstring>
-#include <cmath>
 
 class Posit {
 private:
@@ -9,7 +8,7 @@ private:
     int es; // Number of exponent bits
 
 public:
-    Posit(int n = 16, int es = 2) : n(n), es(es) {}
+    Posit(int n = 32, int es = 2) : n(n), es(es) {}
 
     float posit_to_float(uint32_t x) {
         // Step 1: Extract sign
@@ -53,11 +52,13 @@ public:
 private:
     void extract_fields(uint32_t val, int &regime, int &exp, int &frac) {
         int k = 0;
-        while (k < (n - 1) && ((val >> (n - 2 - k)) & 1)) {
+        bool reg_sign = (val >> (n - 2)) & 1;
+
+        while (k < (n - 1) && ((val >> (n - 2 - k)) & 1) == reg_sign) {
             k++;
         }
 
-        regime = (k > 0 ? k - 1 : -k);
+        regime = reg_sign ? k - 1: -k;
         int regime_length = k + 1;
         int exp_length = es;
         int frac_length = n - 1 - regime_length - exp_length;
@@ -76,11 +77,12 @@ private:
 
 int main() {
     // Example usage
-    uint32_t posit_value = 0b10111110010001111010101011100001; // Example 32-bit Posit value
+    uint32_t posit_value = 0b11111000010010001100101111000010; // Example 32-bit Posit value
 
-    Posit posit_system2(32, 8);
-    float ieee_float = posit_system2.posit_to_float(posit_value);
-    std::cout << "Posit (es=3): " << std::bitset<32>(posit_value) << ", IEEE 754 Float: " << ieee_float << std::endl;
+
+    Posit posit_system(32, 2);
+    float ieee_float = posit_system.posit_to_float(posit_value);
+    std::cout << "Posit (es=2): " << std::bitset<32>(posit_value) << ", IEEE 754 Float: " << ieee_float << std::endl;
 
     return 0;
 }
