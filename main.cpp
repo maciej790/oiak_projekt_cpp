@@ -6,25 +6,25 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define N 16
-#define ES 2
+int N = 16;
+int ES = 2;
 #define BIAS ((1 << (8 - 1)) - 1)
 
-void extract_fields(uint16_t val, int *regime, int *exp, int *frac);
-float construct_ieee_float(bool sign, int biased_exp, int frac);
-float posit_to_float(uint16_t x);
+void wyodrebnij_pola(uint16_t wartosc, int *regime, int *wykladnik, int *mantysa);
+float stworz_float_ieee(bool znak, int bias_wykladnik, int mantysa);
+float post_na_float(uint16_t x);
 
 int main() {
-    srand(time(NULL)); // Inicjalizacja generatora liczb pseudolosowych
+    srand(time(NULL));
 
-    int num_tests = 50;
-    for (int test = 0; test < num_tests; ++test) {
-        uint16_t posit_value = rand() % (1 << N); // Generowanie losowej wartości Posit
+    int ilosc_testow = 50; //ile testow
+    for (int test = 0; test < ilosc_testow; ++test) {
+        uint16_t posit_wartosc = rand() % (1 << N); // losoj posita
 
-        float ieee_float = posit_to_float(posit_value);
+        float ieee_float = post_na_float(posit_wartosc); //skonwertowany posit
         printf("Test %d: Posit (es=%d): 0b", test + 1, ES);
         for (int i = N - 1; i >= 0; i--) {
-            printf("%d", (posit_value >> i) & 1);
+            printf("%d", (posit_wartosc >> i) & 1);
         }
         printf(", IEEE 754 Float: %f\n", ieee_float);
     }
@@ -32,63 +32,62 @@ int main() {
     return 0;
 }
 
-void extract_fields(uint16_t val, int *regime, int *exp, int *frac) {
+void wyodrebnij_pola(uint16_t wartosc, int *regime, int *wykladnik, int *mantysa) {
     int k = 0;
-    while (k < (N - 1) && ((val >> (N - 2 - k)) & 1)) {
+    // szukamy dlugosci pola regime - do momentu natrafienia na przeciwny bit
+    while (k < (N - 1) && ((wartosc >> (N - 2 - k)) & 1)) {
         k++;
     }
 
-    *regime = (k > 0 ? k - 1 : -k);
-    int regime_length = k + 1;
-    int exp_length = ES;
-    int frac_length = N - 1 - regime_length - exp_length;
+    *regime = (k > 0 ? k - 1 : -k); // decydujemy jakie bedzie regime - wzor sprawozdania
+    int regime_dlugosc = k + 1;
+    int wykladnik_dlugosc = ES;
+    int mantysa_dlugosc = N - 1 - regime_dlugosc - wykladnik_dlugosc; // obliczamy dl mantysy
 
-    *exp = (val >> frac_length) & ((1 << exp_length) - 1);
-    *frac = (val & ((1 << frac_length) - 1)) << (23 - frac_length); // Assuming IEEE 754 single precision float
+    *wykladnik = (wartosc >> mantysa_dlugosc) & ((1 << wykladnik_dlugosc) - 1);
+    // normalizujemy mantyse do pojedynczej precyzji - single floata
+    *mantysa = (wartosc & ((1 << mantysa_dlugosc) - 1)) << (23 - mantysa_dlugosc);
 
-    // Debug output
-    // printf("Regime: %d, Exp: %d, Frac: 0x%X\n", *regime, *exp, *frac);
+    // do debugowania
+    // printf("Regime: %d, ES: %d, Mantysa: 0x%X\n", *regime, *wykladnik, *mantysa);
 }
 
-float construct_ieee_float(bool sign, int biased_exp, int frac) {
-    uint32_t ieee_int = (sign << 31) | ((biased_exp & 0xFF) << 23) | (frac & ((1 << 23) - 1));
+// finalna kosntrukcja floata z wyodrebnionych pol
+float stworz_float_ieee(bool znak, int bias_wykladnik, int mantysa) {
+    uint32_t ieee_int = (znak << 31) | ((bias_wykladnik & 0xFF) << 23) | (mantysa & ((1 << 23) - 1));
     float ieee_float;
     memcpy(&ieee_float, &ieee_int, sizeof(ieee_float));
     return ieee_float;
 }
 
-float posit_to_float(uint16_t x) {
-    // Step 1: Extract sign
-    bool sign = (x >> (N - 1)) & 1;
+float post_na_float(uint16_t x) {
+    // pobierz znak
+    bool znak = (x >> (N - 1)) & 1;
 
-    // Step 2: Extract value (magnitude)
-    uint16_t val = x & ((1 << (N - 1)) - 1);
+    // pobierz reszte bitow - bez znaku
+    uint16_t wartosc = x & ((1 << (N - 1)) - 1);
 
-    // Step 3: Check if value is zero
-    if (val == 0) {
-        // Step 4: Return positive or negative zero based on sign
-        return sign ? -0.0f : 0.0f;
+    // dopelnienie
+    if (wartosc == 0) {
+        return znak ? -0.0f : 0.0f;
     } else {
-        // Step 9: Determine absolute value
-        uint16_t abs_val = sign ? ((1 << (N - 1)) - 1) & ~val + 1 : val;
+        // wartosc bezwzgledna
+        uint16_t abs_wartosc = znak ? ((1 << (N - 1)) - 1) & ~wartosc + 1 : wartosc;
 
-        // Step 13: Extract regime, exponent, fraction fields
-        int regime, exp, frac;
-        extract_fields(abs_val, &regime, &exp, &frac);
+        // wyodrebnianione pola
+        int regime, wykladnik, mantysa;
+        wyodrebnij_pola(abs_wartosc, &regime, &wykladnik, &mantysa);
 
-        // Step 14: Bias for IEEE float exponent
         int bias = BIAS;
 
-        // Step 15: Calculate biased exponent
-        int biased_exp = (regime * (1 << ES)) + exp + bias;
+        // policz wykladnik przesuniety o bias
+        int bias_wykladnik = (regime * (1 << ES)) + wykladnik + bias;
 
-        // Debug output
-        // printf("Biased Exp: %d\n", biased_exp);
+        // do  debugowania
+        // printf("przesuniety wykladnik: %d\n", bias_wykladnik);
 
-        // Step 16: Construct IEEE float
-        float ieee_float = construct_ieee_float(sign, biased_exp, frac);
-
-        // Step 17: Return IEEE float
+        // tworzenie floata
+        float ieee_float = stworz_float_ieee(znak, bias_wykladnik, mantysa);
         return ieee_float;
     }
 }
