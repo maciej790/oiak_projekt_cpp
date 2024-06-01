@@ -10,11 +10,11 @@ int ES = 2; // es bedzie zmieniany w kodzie (od 1 do 8) przy benchtestach
 
 void wyodrebnij_pola(uint16_t wartosc, int *regime, int *wykladnik, int *mantysa);
 float stworz_float_ieee(bool znak, int bias_wykladnik, int mantysa);
-float post_na_float(uint16_t x);
+float posit_na_float(uint16_t x);
 
 int main() {
     // Przykladowe wartoscii posita (wybrane recznie arbitralnie do tesow)
-    uint16_t posita[] = {
+    uint16_t testy[] = {
         0b0100011111010101, // mantysa z większą ilością jedynek
         0b0100011000110101,
         0b0011100101001011,
@@ -55,15 +55,25 @@ int main() {
         0b0110010110011001,
         0b1011101101000110,
         0b1110101001011101,
-        0b1100111111110100
+        0b1100111111110100,
+        0b0100100100100100,
+        0b0000000010000011,
+        0b0101101100000101,
+        0b1101000100100111,
+        0b1111011011011110,
+        0b1110000011111111,
+        0b0100110010101101,
+        0b0010100111101011,
+        0b1010101011011011,
+        0b0010011110011010,
     };
 
-    int ilosc_testow = sizeof(posita) / sizeof(uint16_t);
+    int ilosc_testow = sizeof(testy) / sizeof(uint16_t);
 
     for (int test = 0; test < ilosc_testow; ++test) {
-        uint16_t posit_wartosc = posita[test];
+        uint16_t posit_wartosc = testy[test];
 
-        float ieee_float = post_na_float(posit_wartosc); //skonwertowany posit
+        float ieee_float = posit_na_float(posit_wartosc); //skonwertowany posit
         printf("Test %d: Posit (es=%d): 0b", test + 1, ES);
         for (int i = N - 1; i >= 0; i--) {
             printf("%d", (posit_wartosc >> i) & 1);
@@ -101,7 +111,7 @@ float stworz_float_ieee(bool znak, int bias_wykladnik, int mantysa) {
     return ieee_float;
 }
 
-float post_na_float(uint16_t x) {
+float posit_na_float(uint16_t x) {
     // pobierz znak
     bool znak = (x >> (N - 1)) & 1;
 
