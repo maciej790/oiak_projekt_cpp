@@ -3,8 +3,6 @@
 #include <stdbool.h>
 #include <string.h>
 #include <math.h>
-#include <stdlib.h>
-#include <time.h>
 
 int N = 16;
 int ES = 2;
@@ -15,18 +13,62 @@ float stworz_float_ieee(bool znak, int bias_wykladnik, int mantysa);
 float post_na_float(uint16_t x);
 
 int main() {
-    srand(time(NULL));
+    // Przykładowe wartości posita (wybrane ręcznie)
+    uint16_t posita[] = {
+        0b0100011111010101, // Mantysa z większą ilością jedynek
+        0b0100011000110101,
+        0b0011100101001011,
+        0b1011011110110101,
+        0b1100111110010010,
+        0b0111111000010010,
+        0b0100100111110011,
+        0b1101011010110100,
+        0b1010100101100101,
+        0b1111110111000100,
+        0b0011111011011100,
+        0b1000111000111000,
+        0b1010011100011111,
+        0b1111011011011000,
+        0b0111111101101001,
+        0b0001011110011110,
+        0b1100101111011111,
+        0b0101111011100111,
+        0b1111111111111111, // Maksymalna wartość posit
+        0b0000000000000001, // Minimalna wartość posit
+        // Dodatkowe wartości posita
+        0b0110010101110000,
+        0b1010110100111011,
+        0b0011100111111110,
+        0b0111001101101011,
+        0b1001001110011111,
+        0b0101111100101101,
+        0b1010101011110100,
+        0b1110001110110010,
+        0b0011111100010101,
+        0b0111110010010011,
+        0b1101010101001110,
+        0b1000010011000111,
+        0b0101101111000101,
+        0b0110111111101001,
+        0b1111011001000110,
+        0b0010101010101010,
+        0b0110010110011001,
+        0b1011101101000110,
+        0b1110101001011101,
+        0b1100111111110100
+    };
 
-    int ilosc_testow = 50; //ile testow
+    int ilosc_testow = sizeof(posita) / sizeof(uint16_t);
+
     for (int test = 0; test < ilosc_testow; ++test) {
-        uint16_t posit_wartosc = rand() % (1 << N); // losoj posita
+        uint16_t posit_wartosc = posita[test];
 
         float ieee_float = post_na_float(posit_wartosc); //skonwertowany posit
         printf("Test %d: Posit (es=%d): 0b", test + 1, ES);
         for (int i = N - 1; i >= 0; i--) {
             printf("%d", (posit_wartosc >> i) & 1);
         }
-        printf(", IEEE 754 Float: %f\n", ieee_float);
+        printf(", IEEE 754 Float: %.10f\n", ieee_float); // zmieniono formatowanie na %.10f dla większej precyzji
     }
 
     return 0;
@@ -45,14 +87,13 @@ void wyodrebnij_pola(uint16_t wartosc, int *regime, int *wykladnik, int *mantysa
     int mantysa_dlugosc = N - 1 - regime_dlugosc - wykladnik_dlugosc; // obliczamy dl mantysy
 
     *wykladnik = (wartosc >> mantysa_dlugosc) & ((1 << wykladnik_dlugosc) - 1);
-    // normalizujemy mantyse do pojedynczej precyzji - single floata
     *mantysa = (wartosc & ((1 << mantysa_dlugosc) - 1)) << (23 - mantysa_dlugosc);
 
     // do debugowania
     // printf("Regime: %d, ES: %d, Mantysa: 0x%X\n", *regime, *wykladnik, *mantysa);
 }
 
-// finalna kosntrukcja floata z wyodrebnionych pol
+// finalna konstrukcja floata z wyodrebnionych pol
 float stworz_float_ieee(bool znak, int bias_wykladnik, int mantysa) {
     uint32_t ieee_int = (znak << 31) | ((bias_wykladnik & 0xFF) << 23) | (mantysa & ((1 << 23) - 1));
     float ieee_float;
