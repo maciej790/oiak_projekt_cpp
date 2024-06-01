@@ -5,7 +5,7 @@
 #include <math.h>
 
 int N = 16;
-int ES = 2;
+int ES = 2; // es bedzie zmieniany w kodzie (od 1 do 8) przy benchtestach
 #define BIAS ((1 << (8 - 1)) - 1)
 
 void wyodrebnij_pola(uint16_t wartosc, int *regime, int *wykladnik, int *mantysa);
@@ -13,9 +13,9 @@ float stworz_float_ieee(bool znak, int bias_wykladnik, int mantysa);
 float post_na_float(uint16_t x);
 
 int main() {
-    // Przykładowe wartości posita (wybrane ręcznie)
+    // Przykladowe wartoscii posita (wybrane recznie arbitralnie do tesow)
     uint16_t posita[] = {
-        0b0100011111010101, // Mantysa z większą ilością jedynek
+        0b0100011111010101, // mantysa z większą ilością jedynek
         0b0100011000110101,
         0b0011100101001011,
         0b1011011110110101,
@@ -33,9 +33,9 @@ int main() {
         0b0001011110011110,
         0b1100101111011111,
         0b0101111011100111,
-        0b1111111111111111, // Maksymalna wartość posit
-        0b0000000000000001, // Minimalna wartość posit
-        // Dodatkowe wartości posita
+        0b1111111111111111, // maks wartość posit
+        0b0000000000000001, // min wartość posit
+        // inne wartocii posita (wybrane losowo za pomoca generatora w pythonie) - sprawozdanie
         0b0110010101110000,
         0b1010110100111011,
         0b0011100111111110,
@@ -68,7 +68,7 @@ int main() {
         for (int i = N - 1; i >= 0; i--) {
             printf("%d", (posit_wartosc >> i) & 1);
         }
-        printf(", IEEE 754 Float: %.10f\n", ieee_float); // zmieniono formatowanie na %.10f dla większej precyzji
+        printf(", IEEE 754 Float: %.10f\n", ieee_float); // %.10f dla wiekszej precyzji - wymaga usprawnienia
     }
 
     return 0;
