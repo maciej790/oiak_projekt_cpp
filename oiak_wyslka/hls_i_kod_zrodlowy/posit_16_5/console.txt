@@ -1,0 +1,102 @@
+ ==  Bambu executed with: bambu --std=c99 --top-fname=posit_na_float posit_16_5.c 
+
+
+********************************************************************************
+                    ____                  _
+                   | __ )  __ _ _ __ ___ | |_   _   _
+                   |  _ \ / _` | '_ ` _ \| '_ \| | | |
+                   | |_) | (_| | | | | | | |_) | |_| |
+                   |____/ \__,_|_| |_| |_|_.__/ \__,_|
+
+********************************************************************************
+                         High-Level Synthesis Tool
+
+                         Politecnico di Milano - DEIB
+                          System Architectures Group
+********************************************************************************
+                Copyright (C) 2004-2020 Politecnico di Milano
+Version: PandA 0.9.7-dev - Revision 151822f6eb6b28b68ef7cde4c7c3c0add185ed9d-panda-0.9.7-dev
+
+Target technology = FPGA
+
+  Functions to be synthesized:
+    posit_na_float
+
+
+  Memory allocation information:
+    BRAM bitsize: 8
+    Spec may not exploit DATA bus width
+    All the data have a known address
+    Internal data is not externally accessible
+    DATA bus bitsize: 8
+    ADDRESS bus bitsize: 5
+    SIZE bus bitsize: 4
+    ALL pointers have been resolved
+    Internally allocated memory (no private memories): 0
+    Internally allocated memory: 0
+  Time to perform memory allocation: 0.00 seconds
+
+
+  Module allocation information for function posit_na_float:
+    Number of complex operations: 0
+    Number of complex operations: 0
+  Time to perform module allocation: 0.07 seconds
+
+
+  Scheduling Information of function posit_na_float:
+    Number of control steps: 8
+    Minimum slack: 4.1631999999999998
+    Estimated max frequency (MHz): 171.3267543859649
+  Time to perform scheduling: 0.01 seconds
+
+
+  State Transition Graph Information of function posit_na_float:
+    Number of states: 6
+    Done port is registered
+  Time to perform creation of STG: 0.01 seconds
+
+
+  Easy binding information for function posit_na_float:
+    Bound operations:57/66
+  Time to perform easy binding: 0.00 seconds
+
+
+  Storage Value Information of function posit_na_float:
+    Number of storage values inserted: 10
+  Time to compute storage value information: 0.00 seconds
+
+
+  Register binding information for function posit_na_float:
+    Register allocation algorithm obtains a sub-optimal result: 10 registers(LB:6)
+  Time to perform register binding: 0.00 seconds
+
+
+  Register binding information for function posit_na_float:
+    Register allocation algorithm obtains a sub-optimal result: 10 registers(LB:6)
+  Time to perform register binding: 0.00 seconds
+
+
+  Module binding information for function posit_na_float:
+    Number of modules instantiated: 65
+    Number of possible conflicts for possible false paths introduced by resource sharing: 0
+    Estimated resources area (no Muxes and address logic): 541
+    Estimated area of MUX21: 20
+    Total estimated area: 561
+    Estimated number of DSPs: 0
+    Slack computed in 0.00 seconds
+    False-loop computation completed in 0.00 seconds
+    Weight computation completed in 0.00 seconds
+    Clique covering computation completed in 0.00 seconds
+  Time to perform module binding: 0.00 seconds
+
+
+  Register binding information for function posit_na_float:
+    Register allocation algorithm obtains a sub-optimal result: 10 registers(LB:6)
+  Time to perform register binding: 0.00 seconds
+
+
+  Connection Binding Information for function posit_na_float:
+    Number of allocated multiplexers (2-to-1 equivalent): 7
+  Time to perform interconnection binding: 0.00 seconds
+
+  Total number of flip-flops in function posit_na_float: 138
